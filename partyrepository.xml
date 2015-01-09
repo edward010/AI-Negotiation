@@ -8,6 +8,11 @@
           classPath="negotiator.group1.Group1"
           partyName="Group 1"
           protocolClassPath="negotiator.protocol.AlternatingOfferCounterOfferProtocol"/>
+          <partyRepItem
+          description="Agent for group n"
+          classPath="negotiator.group1.Group2"
+          partyName="Group 2"
+          protocolClassPath="negotiator.protocol.AlternatingOfferCounterOfferProtocol"/>
         </partyRepItems>
         <domainRepItem/>
         <protocolRepItem/>

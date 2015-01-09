@@ -4,6 +4,7 @@ package negotiator.group1;
 import java.util.List;
 import java.util.Map;
 
+import agents.anac.y2010.Yushu.Utility;
 import agents.anac.y2012.AgentLG.OpponentBids;
 import negotiator.Bid;
 import negotiator.DeadlineType;
@@ -19,8 +20,16 @@ import negotiator.utility.UtilitySpace;
  */
 public class Group1 extends AbstractNegotiationParty {
 
-	private OpponentBids party1opponentBids;
-	private double[] party1Weights = null;
+	private OpponentBids party2opponentBids;
+	private OpponentBids party3opponentBids;
+	private OpponentBids partyopponentBids;
+	private double[][] partyWeights = null;
+	private String accept = "(Accept)";
+	private String party2 = "Party 2";
+	private int j,numberOfAgents;
+	private int count = 0;
+	private Bid bid;
+
 	/**
 	 * Please keep this constructor. This is called by genius.
 	 *
@@ -30,16 +39,18 @@ public class Group1 extends AbstractNegotiationParty {
 	 * @param randomSeed If you use any randomization, use this seed for it.
 	 */
 	public Group1(UtilitySpace utilitySpace,
-				  Map<DeadlineType, Object> deadlines,
-				  Timeline timeline,
-				  long randomSeed) {
-		// Make sure that this constructor calls it's parent.
+			Map<DeadlineType, Object> deadlines,
+			Timeline timeline,
+			long randomSeed) {
+		// Make sure that this constructor calls its parent.
 		super(utilitySpace, deadlines, timeline, randomSeed);
-		
-		party1opponentBids = new OpponentBids(utilitySpace);
+
+		party2opponentBids = new OpponentBids(utilitySpace);
+		party3opponentBids = new OpponentBids(utilitySpace);
+		partyopponentBids = new OpponentBids(utilitySpace);
 	}
 
-	
+
 	/**
 	 * Each round this method gets called and ask you to accept or offer. The first party in
 	 * the first round is a bit different, it can only propose an offer.
@@ -58,16 +69,22 @@ public class Group1 extends AbstractNegotiationParty {
 		else {
 			return new Accept();
 		}
-		*/
-		//if (!validActions.contains(Accept.class)){
-		
-		Bid bid = this.generateRandomBid();
-		return new Offer(bid);
-		//}
-		//else  {
-			//return new Accept();
-			
-		//}
+		 */
+		if (!validActions.contains(Accept.class)||getUtility(bid)<0.9){
+			Bid bid;
+			try {
+				bid = Utility.getRandomBid(this.utilitySpace);
+			} catch (Exception e) {
+				bid = this.generateRandomBid();
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return new Offer(bid);
+		}
+		else  {
+			return new Accept();
+
+		}
 	}
 
 
@@ -80,46 +97,74 @@ public class Group1 extends AbstractNegotiationParty {
 	 */
 	@Override
 	public void receiveMessage(Object sender, Action action) {
-		// Get bid
-		Bid bid = Action.getBidFromAction(action);
 		
-		// Get bid size.
-		int bidSize = bid.getIssues().size();
+		String Senders = sender.toString();
 		
-		// Create array for estimated weights if it doesn't exist.
-		if (party1Weights==null){
-			party1Weights = new double[bidSize];
-			for(int i=0;i<bidSize;i++){
-				party1Weights[i]=(double) 1/bidSize;
-			} 
+		System.out.println("got message from " + Senders);
+
+		count = count+1;
+		if (count==30){
+			count = count;
 		}
-		
-		// If it does exist, update the estimated weights using frequency analysis.
-		// Increment = 0.1.
-		else {
-			Bid lastBid = this.party1opponentBids.getOpponentsBids().get(this.party1opponentBids.getOpponentsBids().size()-1);
+		System.out.println(count);
+
+		if (action.toString()==accept){
+			// Do nothing for now			
+		}
+		else{
+			// Get bid
+			bid = Action.getBidFromAction(action);
+			System.out.println(getUtility(bid));
 			
-			double party1WeightSum = 0;
-			for (int i=0;i<bidSize;i++){
-				
-				try {
-					if (bid.getValue(i+1).equals(lastBid.getValue(i+1))){
-						party1Weights[i]=party1Weights[i]+0.1;
+			if (sender.toString().equals(party2)){
+				j=0;
+				partyopponentBids = party2opponentBids; 
+				party2opponentBids.addBid(bid);
+			} else {
+				j=1; 
+				partyopponentBids = party3opponentBids; 
+				party3opponentBids.addBid(bid);
+			}
+			
+			// Get bid size.
+			int bidSize = bid.getIssues().size();
+			
+			// Create array for estimated weights if it doesn't exist.
+			if (partyWeights==null){
+				partyWeights = new double[bidSize][2];
+				for(int i=0;i<bidSize;i++){
+					for (int k=0;k<numberOfAgents;k++){
+					partyWeights[i][k]=(double) 1/bidSize;
 					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				party1WeightSum = party1WeightSum+party1Weights[i];
+				} 
 			}
+			// If it does exist, update the estimated weights using frequency analysis.
+			// Increment = 0.1.
 			
-			for(int i=0;i<bidSize;i++){
-				party1Weights[i]=party1Weights[i]/party1WeightSum;
+			else {
+				Bid lastBid = this.partyopponentBids.getOpponentsBids().get(
+						this.partyopponentBids.getOpponentsBids().size()-1);
+				int a = this.partyopponentBids.getOpponentsBids().size();
+				double party1WeightSum = 0;
+				for (int i=0;i<bidSize;i++){
+
+					try {
+						if (bid.getValue(i+1).equals(lastBid.getValue(i+1))){
+							partyWeights[i][j]=partyWeights[i][j]+0.1;
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					party1WeightSum = party1WeightSum+partyWeights[i][j];
+				}
+
+				for(int i=0;i<bidSize;i++){
+					partyWeights[i][j]=partyWeights[i][j]/party1WeightSum;
+				}
 			}
+			//System.out.println(partyWeights[0][j]);
 		}
-		System.out.println(party1Weights[0]);
-		// Add current bid to bid database
-		this.party1opponentBids.addBid(bid);
 	}
 
 }
