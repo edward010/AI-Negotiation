@@ -5,8 +5,8 @@
         <partyRepItems>
 		<partyRepItem
           description="Agent for group n"
-          classPath="negotiator.groupn.Groupn"
-          partyName="Group n"
+          classPath="negotiator.group1.Group1"
+          partyName="Group 1"
           protocolClassPath="negotiator.protocol.AlternatingOfferCounterOfferProtocol"/>
         </partyRepItems>
         <domainRepItem/>
