@@ -52,7 +52,8 @@ public class Group2 extends AbstractNegotiationParty {
 			return new Offer(generateRandomBid());
 		}
 		else {
-			return new Accept();
+			return new Offer(generateRandomBid());
+			//return new Accept();
 		}
 		
 	}

@@ -1,6 +1,8 @@
 package negotiator.group1;
 
 
+import java.io.Console;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +14,7 @@ import negotiator.Timeline;
 import negotiator.actions.Accept;
 import negotiator.actions.Action;
 import negotiator.actions.Offer;
+import negotiator.group1.Information.Value;
 import negotiator.parties.AbstractNegotiationParty;
 import negotiator.utility.UtilitySpace;
 
@@ -29,6 +32,8 @@ public class Group1 extends AbstractNegotiationParty {
 	private int j,numberOfAgents;
 	private int count = 0;
 	private Bid bid;
+	private List<Information> opponentInfo = new ArrayList<Information>();
+	private List<String> opponents = new ArrayList<String>();
 
 	/**
 	 * Please keep this constructor. This is called by genius.
@@ -70,7 +75,7 @@ public class Group1 extends AbstractNegotiationParty {
 			return new Accept();
 		}
 		 */
-		if (!validActions.contains(Accept.class)||getUtility(bid)<0.9){
+		if (!validActions.contains(Accept.class)||getUtility(bid)<0.7){
 			Bid bid;
 			try {
 				bid = Utility.getRandomBid(this.utilitySpace);
@@ -82,6 +87,7 @@ public class Group1 extends AbstractNegotiationParty {
 			return new Offer(bid);
 		}
 		else  {
+			System.out.println("Accepted");
 			return new Accept();
 
 		}
@@ -98,15 +104,15 @@ public class Group1 extends AbstractNegotiationParty {
 	@Override
 	public void receiveMessage(Object sender, Action action) {
 		
-		String Senders = sender.toString();
+		String senderID = sender.toString();
 		
-		System.out.println("got message from " + Senders);
+		System.out.println("got message from " + senderID);
 
 		count = count+1;
 		if (count==30){
 			count = count;
 		}
-		System.out.println(count);
+		//System.out.println(count);
 
 		if (action.toString()==accept){
 			// Do nothing for now			
@@ -114,7 +120,7 @@ public class Group1 extends AbstractNegotiationParty {
 		else{
 			// Get bid
 			bid = Action.getBidFromAction(action);
-			System.out.println(getUtility(bid));
+			System.out.println(getUtility(bid) + "\n");
 			
 			if (sender.toString().equals(party2)){
 				j=0;
@@ -129,12 +135,23 @@ public class Group1 extends AbstractNegotiationParty {
 			// Get bid size.
 			int bidSize = bid.getIssues().size();
 			
+			// Fill the OpponentInfo
+			if(!opponents.contains(senderID)) {
+				try {
+					addSender(senderID, bidSize, bid);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			// Create array for estimated weights if it doesn't exist.
 			if (partyWeights==null){
 				partyWeights = new double[bidSize][2];
 				for(int i=0;i<bidSize;i++){
 					for (int k=0;k<numberOfAgents;k++){
 					partyWeights[i][k]=(double) 1/bidSize;
+					System.out.println("in");
 					}
 				} 
 			}
@@ -144,6 +161,7 @@ public class Group1 extends AbstractNegotiationParty {
 			else {
 				Bid lastBid = this.partyopponentBids.getOpponentsBids().get(
 						this.partyopponentBids.getOpponentsBids().size()-1);
+
 				int a = this.partyopponentBids.getOpponentsBids().size();
 				double party1WeightSum = 0;
 				for (int i=0;i<bidSize;i++){
@@ -163,8 +181,25 @@ public class Group1 extends AbstractNegotiationParty {
 					partyWeights[i][j]=partyWeights[i][j]/party1WeightSum;
 				}
 			}
-			//System.out.println(partyWeights[0][j]);
 		}
+	}
+	
+	public void addSender(String sender, Integer bidSize, Bid bid) throws Exception {
+		Information info = new Information();
+		List<Double> weight = new ArrayList<Double>();
+		List<Value> values = new ArrayList<Value>();
+		for(int i=0;i<bidSize;i++){
+				weight.add((double) 1/bidSize);
+				Value value = new Value();
+				value.item.add(bid.getValue(i+1).toString());
+				value.number.add(1);
+				values.add(value);
+			}
+		info.name = sender;
+		info.weights = weight; 
+		info.values = values;
+		opponentInfo.add(info);
+		opponents.add(sender);
 	}
 
 }
