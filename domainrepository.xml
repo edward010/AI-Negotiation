@@ -14,7 +14,18 @@
                 <profile url="file:etc/templates/partydomain/party7_utility.xml"/>
                 <profile url="file:etc/templates/partydomain/party8_utility.xml"/>
                 <profile url="file:etc/templates/partydomain/party9_utility.xml"/>
-            </domainRepItem>            
+            </domainRepItem>
+            <domainRepItem url="file:etc/templates/University/University.xml">
+                <profile url="file:etc/templates/University/University_util1.xml"/>
+                <profile url="file:etc/templates/University/University_util2.xml"/>
+                <profile url="file:etc/templates/University/University_util3.xml"/>
+                <profile url="file:etc/templates/University/University_util4.xml"/>
+                <profile url="file:etc/templates/University/University_util5.xml"/>
+                <profile url="file:etc/templates/University/University_util6.xml"/>
+                <profile url="file:etc/templates/University/University_util7.xml"/>
+                <profile url="file:etc/templates/University/University_util8.xml"/>
+                <profile url="file:etc/templates/University/University_util9.xml"/>
+            </domainRepItem>
         </domainRepItem>
         <protocolRepItem/>
         <multiPartyProtocolRepItem/>
