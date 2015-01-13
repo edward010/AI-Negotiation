@@ -25,10 +25,7 @@ public class Group1 extends AbstractNegotiationParty {
 
 	private OpponentBids party2opponentBids;
 	private OpponentBids party3opponentBids;
-	private double[][] partyWeights = null;
 	private String accept = "(Accept)";
-	private String party2 = "Party 2";
-	private int j, numberOfAgents;
 	private int count = 0;
 	private Bid bid, lastBid;
 	private List<Information> opponentInfo = new ArrayList<Information>();
@@ -109,34 +106,25 @@ public class Group1 extends AbstractNegotiationParty {
 
 		// Check if the message received is a bid or an accept
 		if (action.toString()==accept){
-			// Save bid as being acceptable bid for that agent.
-			if (sender.toString().equals(party2)){
-				
-			} else {
-				
-			}
 		}
 		else{
 			// If the message is a bid, estimate weights for that agent.
-			
 			// Get bid.
 			bid = Action.getBidFromAction(action);
 
-			
+
 			// Check which agent sent the message.
 			// Also fill the lastBid variable with the previous bid. If none exists, take current bid as previous bid.
-			if (sender.toString().equals(party2)){
-				this.j=0;
+			/* if (sender.toString().equals(party2)){
 				if (this.party2opponentBids.getOpponentsBids().size()>1){
 				lastBid = this.party2opponentBids.getOpponentsBids().get(
 						this.party2opponentBids.getOpponentsBids().size()-1); }
 				else {
 					lastBid = bid;
 				}
-				
+
 				party2opponentBids.addBid(bid);
 			} else {
-				this.j=1;
 				if (this.party3opponentBids.getOpponentsBids().size()>1){
 					lastBid = this.party3opponentBids.getOpponentsBids().get(
 						this.party3opponentBids.getOpponentsBids().size()-1);  }
@@ -145,11 +133,10 @@ public class Group1 extends AbstractNegotiationParty {
 				}
 				party3opponentBids.addBid(bid);
 			}
-
+			 */
 			// Get bid size.
 			int bidSize = bid.getIssues().size();
-			numberOfAgents = 2;
-			
+
 			// Fill the OpponentInfo
 			if(!opponents.contains(sender.toString())) {
 				try {
@@ -160,54 +147,52 @@ public class Group1 extends AbstractNegotiationParty {
 				}
 			}
 			
-
-			// Create array for estimated weights if it doesn't exist.
-			if (partyWeights==null){
-				partyWeights = new double[bidSize][numberOfAgents];
-				for(int i=0;i<bidSize;i++){
-					for (int k=0;k<numberOfAgents;k++){
-						partyWeights[i][k]=(double) 1/bidSize;
-					}
-				} 
-			}
+			// Get sender index.
+			int agentIndex = opponents.indexOf(sender.toString());
 			
-			// If it does exist, update the estimated weights using frequency analysis.
+			// Get last bid of sender.
+			lastBid = opponentInfo.get(agentIndex).getLastBid();
+			// Add current bid to bid list of sender.
+			opponentInfo.get(agentIndex).bids.add(bid);
+			// Create array for estimated weights
+			double[] partyWeights = new double[bidSize];
+
+			// Update the estimated weights using frequency analysis.
 			// Increment = 0.01.
-			else {
-				double party1WeightSum = 0;
-				for (int i=0;i<bidSize;i++){
-					try {
-						if (bid.getValue(i+1).equals(lastBid.getValue(i+1))){
-							partyWeights[i][this.j]=partyWeights[i][this.j]+0.01;
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+			double party1WeightSum = 0;
+			for (int i=0;i<bidSize;i++){
+				try {
+					if (bid.getValue(i+1).equals(lastBid.getValue(i+1))){
+						partyWeights[i]=partyWeights[i]+0.01;
 					}
-					party1WeightSum = party1WeightSum+partyWeights[i][this.j];
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				// Normalize the new weights with increments.
-				for(int i=0;i<bidSize;i++){
-					partyWeights[i][this.j]=partyWeights[i][this.j]/party1WeightSum;
-				}
+				party1WeightSum = party1WeightSum+partyWeights[i];
+			}
+			// Normalize the new weights with increments and set them in opponentInfo of sender.
+			for(int i=0;i<bidSize;i++){
+				opponentInfo.get(agentIndex).weights.set(i,partyWeights[i]/party1WeightSum);
 			}
 		}
 	}
-	
+
 	public void addSender(String sender, Integer bidSize, Bid bid) throws Exception {
 		Information info = new Information();
 		List<Double> weight = new ArrayList<Double>();
 		List<Value> values = new ArrayList<Value>();
 		for(int i=0;i<bidSize;i++){
-				weight.add((double) 1/bidSize);
-				Value value = new Value();
-				value.item.add(bid.getValue(i+1).toString());
-				value.number.add(1);
-				values.add(value);
-			}
+			weight.add((double) 1/bidSize);
+			Value value = new Value();
+			value.item.add(bid.getValue(i+1).toString());
+			value.number.add(1);
+			values.add(value);
+		}
 		info.name = sender;
 		info.weights = weight; 
 		info.values = values;
+		info.bids.add(bid);
 		opponentInfo.add(info);
 		opponents.add(sender);
 	}
