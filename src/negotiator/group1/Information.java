@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import negotiator.Bid;
+import negotiator.issue.Value;
 
 public class Information {
 	String name;
-	List<Value> values = new ArrayList<Value>();
+	List<IssueValue> values = new ArrayList<IssueValue>();
 	List<Double> weights = new ArrayList<Double>();
 	List<Bid> bids = new ArrayList<Bid>();
 	
-	public static class Value {
-		List<String> item = new ArrayList<String>();
+	public static class IssueValue {
+		List<Value> item = new ArrayList<Value>();
 		List<Integer> number = new ArrayList<Integer>();
 	}
 	

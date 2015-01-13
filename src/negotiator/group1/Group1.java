@@ -11,7 +11,7 @@ import negotiator.Timeline;
 import negotiator.actions.Accept;
 import negotiator.actions.Action;
 import negotiator.actions.Offer;
-import negotiator.group1.Information.Value;
+import negotiator.group1.Information.IssueValue;
 import negotiator.parties.AbstractNegotiationParty;
 import negotiator.utility.UtilitySpace;
 
@@ -185,10 +185,8 @@ public class Group1 extends AbstractNegotiationParty {
 		// Debug purpose.
 		count++;
 		if (count==170){
-
 			count = count;
 		}
-
 
 		// Check if the message received is a bid or an accept
 		if (action.toString()=="(Accept)"){
@@ -197,98 +195,22 @@ public class Group1 extends AbstractNegotiationParty {
 		else{
 			// If the message is a bid.
 
-			/** Update weights based on current and last bid */
-
-
 			// Get bid.
 			bid = Action.getBidFromAction(action);
-
-			// Get bid size.
-			int bidSize = bid.getIssues().size();
-
-			// Fill the OpponentInfo
-			if(!opponents.contains(sender.toString())) {
-				try {
-					addSender(sender.toString(), bidSize, bid);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-
-			// Get sender index.
-			int agentIndex = opponents.indexOf(sender.toString());
-
-			// Get last bid of sender.
-			lastBid = opponentInfo.get(agentIndex).getLastBid();
-
-			// Add current bid to bid list of sender.
-			opponentInfo.get(agentIndex).bids.add(bid);
-
-			// Create array for estimated weights and fill it with previous weights.
-			double[] partyWeights = new double[bidSize];
-			for (int i = 0;i<bidSize;i++){
-				partyWeights[i] = opponentInfo.get(agentIndex).weights.get(i);
-			}
-
-			// Update the estimated weights using frequency analysis.
-			// Increment = 0.01.
-			double party1WeightSum = 0;
-			for (int i=0;i<bidSize;i++){
-				try {
-					if (bid.getValue(i+1).equals(lastBid.getValue(i+1))){
-						partyWeights[i]=partyWeights[i]+0.01;
-					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				party1WeightSum = party1WeightSum+partyWeights[i];
-			}
-			// Normalize the new weights with increments and set them in opponentInfo of sender.
-			for(int i=0;i<bidSize;i++){
-				opponentInfo.get(agentIndex).weights.set(i,partyWeights[i]/party1WeightSum);
-			}
-			/** Update values */
-
-			for (int i=0;i<bidSize;i++){
-				try {
-					if(!opponentInfo.get(agentIndex).values.get(i).item.contains(bid.getValue(i+1).toString())) {
-						try {
-							opponentInfo.get(agentIndex).values.get(i).item.add(bid.getValue(i+1).toString());
-							opponentInfo.get(agentIndex).values.get(i).number.add(1);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					} else {
-						int index = opponentInfo.get(agentIndex).values.get(i).item.indexOf(bid.getValue(i+1).toString());
-						opponentInfo.get(agentIndex).values.get(i).number.set(index, opponentInfo.get(agentIndex).values.get(i).number.get(index)+1);
-					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-
-
-
-			}
-
-			//opponentInfo.get(agentIndex).values.indexOf();
-
-
+			
+			// Process bid.
+			processBid(sender,bid);
 		}
 	}
 
 	public void addSender(String sender, Integer bidSize, Bid bid) throws Exception {
 		Information info = new Information();
 		List<Double> weight = new ArrayList<Double>();
-		List<Value> values = new ArrayList<Value>();
+		List<IssueValue> values = new ArrayList<IssueValue>();
 		for(int i=0;i<bidSize;i++){
 			weight.add((double) 1/bidSize);
-			Value value = new Value();
-			value.item.add(bid.getValue(i+1).toString());
+			IssueValue value = new IssueValue();
+			value.item.add(bid.getValue(i+1));
 			value.number.add(1);
 			values.add(value);
 		}
@@ -298,6 +220,81 @@ public class Group1 extends AbstractNegotiationParty {
 		info.bids.add(bid);
 		opponentInfo.add(info);
 		opponents.add(sender);
+	}
+
+	private void processBid(Object sender, Bid bid){
+		// Get bid size.
+		int bidSize = bid.getIssues().size();
+
+		// Fill the OpponentInfo
+		if(!opponents.contains(sender.toString())) {
+			try {
+				addSender(sender.toString(), bidSize, bid);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		// Get sender index.
+		int agentIndex = opponents.indexOf(sender.toString());
+
+		// Get last bid of sender.
+		lastBid = opponentInfo.get(agentIndex).getLastBid();
+
+		// Add current bid to bid list of sender.
+		opponentInfo.get(agentIndex).bids.add(bid);
+
+		// Create array for estimated weights and fill it with previous weights.
+		double[] partyWeights = new double[bidSize];
+		for (int i = 0;i<bidSize;i++){
+			partyWeights[i] = opponentInfo.get(agentIndex).weights.get(i);
+		}
+		
+		// Update the estimated weights using frequency analysis.
+		// Increment = 0.01.
+		double party1WeightSum = 0;
+		for (int i=0;i<bidSize;i++){
+			try {
+				if (bid.getValue(i+1).equals(lastBid.getValue(i+1))){
+					partyWeights[i]=partyWeights[i]+0.01;
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// Calculate sum of updated weights.
+			party1WeightSum = party1WeightSum+partyWeights[i];
+		}
+		// Normalize the new weights with increments and set them in opponentInfo of sender.
+		for(int i=0;i<bidSize;i++){
+			opponentInfo.get(agentIndex).weights.set(i,partyWeights[i]/party1WeightSum);
+		}
+		
+		// Update values.
+		for (int i=0;i<bidSize;i++){
+			try {
+				if(!opponentInfo.get(agentIndex).values.get(i).item.contains(bid.getValue(i+1))) {
+					try {
+						opponentInfo.get(agentIndex).values.get(i).item.add(bid.getValue(i+1));
+						opponentInfo.get(agentIndex).values.get(i).number.add(1);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					int index = opponentInfo.get(agentIndex).values.get(i).item.indexOf(bid.getValue(i+1));
+					opponentInfo.get(agentIndex).values.get(i).number.set(index, opponentInfo.get(agentIndex).values.get(i).number.get(index)+1);
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+
+
+
+		}
 	}
 
 }
