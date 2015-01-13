@@ -24,8 +24,6 @@ public class Group1 extends AbstractNegotiationParty {
 	private Bid bid, lastBid;
 	private List<Information> opponentInfo = new ArrayList<Information>();
 	private List<String> opponents = new ArrayList<String>();
-	
-	private List<OpponentBids> opponentBidsList = new ArrayList<OpponentBids>();
 
 	private int numberOfIssues = 0;
 	private int totalRounds = 0;
