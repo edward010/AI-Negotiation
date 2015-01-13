@@ -4,6 +4,7 @@ package negotiator.group1;
 import java.util.List;
 import java.util.Map;
 
+import agents.anac.y2010.Yushu.Utility;
 import negotiator.Bid;
 import negotiator.DeadlineType;
 import negotiator.Timeline;
@@ -48,13 +49,21 @@ public class Group2 extends AbstractNegotiationParty {
 		
 		// with 50% chance, counter offer
 		// if we are the first party, also offer.
-		if (!validActions.contains(Accept.class) || (Math.random() > 0.1 && getUtility(bid)<0.6)) {
-			return new Offer(generateRandomBid());
+		if (!validActions.contains(Accept.class)||getUtility(bid)<0.9){
+			Bid bid;
+			try {
+				bid = Utility.getRandomBid(this.utilitySpace);
+			} catch (Exception e) {
+				bid = this.generateRandomBid();
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return new Offer(bid);
 		}
-		else {
+		else  {
 			return new Accept();
+
 		}
-		
 	}
 
 

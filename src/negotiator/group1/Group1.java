@@ -22,13 +22,12 @@ public class Group1 extends AbstractNegotiationParty {
 
 	private OpponentBids party2opponentBids;
 	private OpponentBids party3opponentBids;
-	private OpponentBids partyopponentBids;
 	private double[][] partyWeights = null;
 	private String accept = "(Accept)";
 	private String party2 = "Party 2";
-	private int j,numberOfAgents;
+	private int j, numberOfAgents;
 	private int count = 0;
-	private Bid bid;
+	private Bid bid, lastBid;
 
 	/**
 	 * Please keep this constructor. This is called by genius.
@@ -47,7 +46,6 @@ public class Group1 extends AbstractNegotiationParty {
 
 		party2opponentBids = new OpponentBids(utilitySpace);
 		party3opponentBids = new OpponentBids(utilitySpace);
-		partyopponentBids = new OpponentBids(utilitySpace);
 	}
 
 
@@ -76,7 +74,6 @@ public class Group1 extends AbstractNegotiationParty {
 				bid = Utility.getRandomBid(this.utilitySpace);
 			} catch (Exception e) {
 				bid = this.generateRandomBid();
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return new Offer(bid);
@@ -97,73 +94,83 @@ public class Group1 extends AbstractNegotiationParty {
 	 */
 	@Override
 	public void receiveMessage(Object sender, Action action) {
-		
-		String Senders = sender.toString();
-		
-		System.out.println("got message from " + Senders);
-
-		count = count+1;
-		if (count==30){
+		// Debug purpose.
+		count++;
+		if (count==170){
 			count = count;
 		}
-		System.out.println(count);
 
+		// Check if the message received is a bid or an accept
 		if (action.toString()==accept){
-			// Do nothing for now			
+			// Save bid as being acceptable bid for that agent.
+			if (sender.toString().equals(party2)){
+				
+			} else {
+				
+			}
 		}
 		else{
-			// Get bid
-			bid = Action.getBidFromAction(action);
-			System.out.println(getUtility(bid));
+			// If the message is a bid, estimate weights for that agent.
 			
+			// Get bid.
+			bid = Action.getBidFromAction(action);
+			
+			// Check which agent sent the message.
+			// Also fill the lastBid variable with the previous bid. If none exists, take current bid as previous bid.
 			if (sender.toString().equals(party2)){
-				j=0;
-				partyopponentBids = party2opponentBids; 
+				this.j=0;
+				if (this.party2opponentBids.getOpponentsBids().size()>1){
+				lastBid = this.party2opponentBids.getOpponentsBids().get(
+						this.party2opponentBids.getOpponentsBids().size()-1); }
+				else {
+					lastBid = bid;
+				}
+				
 				party2opponentBids.addBid(bid);
 			} else {
-				j=1; 
-				partyopponentBids = party3opponentBids; 
+				this.j=1;
+				if (this.party3opponentBids.getOpponentsBids().size()>1){
+					lastBid = this.party3opponentBids.getOpponentsBids().get(
+						this.party3opponentBids.getOpponentsBids().size()-1);  }
+				else {
+					lastBid = bid;
+				}
 				party3opponentBids.addBid(bid);
 			}
-			
+
 			// Get bid size.
 			int bidSize = bid.getIssues().size();
-			
+			numberOfAgents = 2;
 			// Create array for estimated weights if it doesn't exist.
 			if (partyWeights==null){
-				partyWeights = new double[bidSize][2];
+				partyWeights = new double[bidSize][numberOfAgents];
 				for(int i=0;i<bidSize;i++){
 					for (int k=0;k<numberOfAgents;k++){
-					partyWeights[i][k]=(double) 1/bidSize;
+						partyWeights[i][k]=(double) 1/bidSize;
 					}
 				} 
 			}
-			// If it does exist, update the estimated weights using frequency analysis.
-			// Increment = 0.1.
 			
+			// If it does exist, update the estimated weights using frequency analysis.
+			// Increment = 0.01.
 			else {
-				Bid lastBid = this.partyopponentBids.getOpponentsBids().get(
-						this.partyopponentBids.getOpponentsBids().size()-1);
-				int a = this.partyopponentBids.getOpponentsBids().size();
 				double party1WeightSum = 0;
 				for (int i=0;i<bidSize;i++){
-
 					try {
 						if (bid.getValue(i+1).equals(lastBid.getValue(i+1))){
-							partyWeights[i][j]=partyWeights[i][j]+0.1;
+							partyWeights[i][this.j]=partyWeights[i][this.j]+0.01;
 						}
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					party1WeightSum = party1WeightSum+partyWeights[i][j];
+					party1WeightSum = party1WeightSum+partyWeights[i][this.j];
 				}
-
+				// Normalize the new weights with increments.
 				for(int i=0;i<bidSize;i++){
-					partyWeights[i][j]=partyWeights[i][j]/party1WeightSum;
+					partyWeights[i][this.j]=partyWeights[i][this.j]/party1WeightSum;
 				}
 			}
-			//System.out.println(partyWeights[0][j]);
 		}
 	}
 
