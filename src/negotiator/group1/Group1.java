@@ -1,13 +1,10 @@
 package negotiator.group1;
 
-
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import agents.anac.y2010.Yushu.Utility;
-import agents.anac.y2012.AgentLG.OpponentBids;
 import negotiator.Bid;
 import negotiator.DeadlineType;
 import negotiator.Timeline;
@@ -23,9 +20,6 @@ import negotiator.utility.UtilitySpace;
  */
 public class Group1 extends AbstractNegotiationParty {
 
-	private OpponentBids party2opponentBids;
-	private OpponentBids party3opponentBids;
-	private String accept = "(Accept)";
 	private int count = 0;
 	private Bid bid, lastBid;
 	private List<Information> opponentInfo = new ArrayList<Information>();
@@ -51,9 +45,6 @@ public class Group1 extends AbstractNegotiationParty {
 			long randomSeed) {
 		// Make sure that this constructor calls its parent.
 		super(utilitySpace, deadlines, timeline, randomSeed);
-
-		party2opponentBids = new OpponentBids(utilitySpace);
-		party3opponentBids = new OpponentBids(utilitySpace);
 	}
 
 
@@ -196,40 +187,24 @@ public class Group1 extends AbstractNegotiationParty {
 		// Debug purpose.
 		count++;
 		if (count==170){
+
 			count = count;
 		}
 
 
 		// Check if the message received is a bid or an accept
-		if (action.toString()==accept){
+		if (action.toString()=="(Accept)"){
+			// Do nothing.
 		}
 		else{
-			// If the message is a bid, estimate weights for that agent.
+			// If the message is a bid.
+
+			/** Update weights based on current and last bid */
+
+
 			// Get bid.
 			bid = Action.getBidFromAction(action);
 
-
-			// Check which agent sent the message.
-			// Also fill the lastBid variable with the previous bid. If none exists, take current bid as previous bid.
-			/* if (sender.toString().equals(party2)){
-				if (this.party2opponentBids.getOpponentsBids().size()>1){
-				lastBid = this.party2opponentBids.getOpponentsBids().get(
-						this.party2opponentBids.getOpponentsBids().size()-1); }
-				else {
-					lastBid = bid;
-				}
-
-				party2opponentBids.addBid(bid);
-			} else {
-				if (this.party3opponentBids.getOpponentsBids().size()>1){
-					lastBid = this.party3opponentBids.getOpponentsBids().get(
-						this.party3opponentBids.getOpponentsBids().size()-1);  }
-				else {
-					lastBid = bid;
-				}
-				party3opponentBids.addBid(bid);
-			}
-			 */
 			// Get bid size.
 			int bidSize = bid.getIssues().size();
 
@@ -242,16 +217,21 @@ public class Group1 extends AbstractNegotiationParty {
 					e.printStackTrace();
 				}
 			}
-			
+
 			// Get sender index.
 			int agentIndex = opponents.indexOf(sender.toString());
-			
+
 			// Get last bid of sender.
 			lastBid = opponentInfo.get(agentIndex).getLastBid();
+
 			// Add current bid to bid list of sender.
 			opponentInfo.get(agentIndex).bids.add(bid);
-			// Create array for estimated weights
+
+			// Create array for estimated weights and fill it with previous weights.
 			double[] partyWeights = new double[bidSize];
+			for (int i = 0;i<bidSize;i++){
+				partyWeights[i] = opponentInfo.get(agentIndex).weights.get(i);
+			}
 
 			// Update the estimated weights using frequency analysis.
 			// Increment = 0.01.
@@ -271,6 +251,35 @@ public class Group1 extends AbstractNegotiationParty {
 			for(int i=0;i<bidSize;i++){
 				opponentInfo.get(agentIndex).weights.set(i,partyWeights[i]/party1WeightSum);
 			}
+			/** Update values */
+
+			for (int i=0;i<bidSize;i++){
+				try {
+					if(!opponentInfo.get(agentIndex).values.get(i).item.contains(bid.getValue(i+1).toString())) {
+						try {
+							opponentInfo.get(agentIndex).values.get(i).item.add(bid.getValue(i+1).toString());
+							opponentInfo.get(agentIndex).values.get(i).number.add(1);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else {
+						int index = opponentInfo.get(agentIndex).values.get(i).item.indexOf(bid.getValue(i+1).toString());
+						opponentInfo.get(agentIndex).values.get(i).number.set(index, opponentInfo.get(agentIndex).values.get(i).number.get(index)+1);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+
+
+
+			}
+
+			//opponentInfo.get(agentIndex).values.indexOf();
+
+
 		}
 	}
 
