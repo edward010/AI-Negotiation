@@ -12,6 +12,8 @@ import negotiator.actions.Accept;
 import negotiator.actions.Action;
 import negotiator.actions.Offer;
 import negotiator.group1.Information.IssueValue;
+import negotiator.issue.Issue;
+import negotiator.issue.Value;
 import negotiator.parties.AbstractNegotiationParty;
 import negotiator.utility.UtilitySpace;
 
@@ -55,26 +57,6 @@ public class Group1 extends AbstractNegotiationParty {
 	 */
 	@Override
 	public Action chooseAction(List<Class> validActions) {
-		/*
-		// with 50% chance, counter offer
-		// if we are the first party, also offer.
-		if (!validActions.contains(Accept.class) || Math.random() > 0.5) {
-			return new Offer(generateRandomBid());
-		}
-		else {
-			return new Accept();
-		}
-		 */
-		/*if (!validActions.contains(Accept.class)||getUtility(bid)<0.9){
-			Bid bid;
-			try {
-				bid = Utility.getRandomBid(this.utilitySpace);
-			} catch (Exception e) {
-				bid = this.generateRandomBid();
-				e.printStackTrace();
-			}
-			return new Offer(bid);
-		}*/
 		
 		totalRounds = (int) deadlines.get(DeadlineType.ROUND);
 		System.out.println("totalRounds: " + totalRounds);
@@ -96,46 +78,86 @@ public class Group1 extends AbstractNegotiationParty {
 			Bid myBid = new Bid();	
 			
 			if((double) roundsToGo <= 0.5*(double) totalRounds){
+				
 				//generate bid taking others preferences into account
-				/*
+				
+				//generate a bid with high utility for me
+				try {
+					myBid = Utility.getRandomBid(this.utilitySpace);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					double newUtility = 0;
+					do{
+						myBid = generateRandomBid();
+						newUtility = getUtility(myBid);
+					}
+					while((newUtility < 0.75));
+				}
+				System.out.println("Bid generated: " + myBid.toString() + " || utility : " + getUtility(myBid));
+
 				List<Value> importantValues = new ArrayList<Value>();
 				List<Integer> importantIssues = new ArrayList<Integer>();
+				numberOfIssues = opponentInfo.get(0).weights.size();
+				
 				for (Information oppInfo : opponentInfo){
+					
 					int maxWeightIndex = 0;
-					numberOfIssues = oppInfo.weights.size();
-					for(int i = 0; i < oppInfo.weights.size(); i++){
+					System.out.println("START  oppInfo.weights.get(maxWeightIndex) : " + oppInfo.weights.get(maxWeightIndex) + " || maxweightindex is " + maxWeightIndex);
+					for(int i = 1; i < numberOfIssues; i++){
 						if(oppInfo.weights.get(i) > oppInfo.weights.get(maxWeightIndex)){
 							maxWeightIndex = i;
 						}
+						System.out.println("oppInfo.weights.get(" + i + ") : " + oppInfo.weights.get(i));
+						System.out.println("oppInfo.weights.get(maxWeightIndex) : " + oppInfo.weights.get(maxWeightIndex) + " || maxweightindex is " + maxWeightIndex);
 					}
-					importantValues.add(oppInfo.values.get(maxWeightIndex));
+					//get the issue with the highest weight
+					IssueValue importantIssue = oppInfo.values.get(maxWeightIndex);
+					int nubmerOfValues = importantIssue.item.size();
+					int mostImportant = 0;
+					//get the index of the most preferred value
+					for(int i = 1; i<nubmerOfValues; i++){
+						System.out.println(" --- "+ i + " " +  importantIssue.item.get(i));
+						if(importantIssue.number.get(i) > importantIssue.number.get(mostImportant)){
+							mostImportant = i;
+						}
+					}
+					System.out.println("mostImportant: " + mostImportant + " is "+ importantIssue.item.get(mostImportant));
+					System.out.println("issueID-1 is " + maxWeightIndex);
+					importantValues.add(importantIssue.item.get(mostImportant));
 					importantIssues.add(maxWeightIndex);
 				}
 				
+				//get our least important issue id-1
+				System.out.println("numberOfIssues : " + numberOfIssues);
 				int least = 0;
-				for(int i=1; i<numberOfIssues; i++){
-					if(utilitySpace.getWeight(i) < utilitySpace.getWeight(least)){
+				for(int i=0; i<numberOfIssues; i++){
+					if(utilitySpace.getWeight(i+1) < utilitySpace.getWeight(least+1)){
 						least = i;
 					}
 				}
+				System.out.println("least : " + least);
 				
-				for(int j = 0; j<importantIssues.size(); j++){
-					int issueId = importantIssues.get(j);
-					//if I have a low weight for that issueId, set that issue to the corresponding value
-					if(issueId == least){
-						//myBid.setValue(issueId, importantValues.get(j));
+				//adjust bid for the (to us) least important issue
+
+				for(int ii = 0; ii < importantIssues.size(); ii++){
+					if(importantIssues.get(ii).equals(least)){
+						try {
+							System.out.println("myBid.get : " + myBid.getValue(least+1).toString());
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						// - to be corrected
+						myBid.setValue(least+1, importantValues.get(ii));
+					}
+					else{
+						System.out.println("nope");
 					}
 				}
-				*/
-				
-				//*current replacement: generate random bid with utility > 0.7
-				double newUtility = 0;
-				do{
-					myBid = generateRandomBid();
-					newUtility = getUtility(myBid);
-				}
-				while((newUtility < 0.6));
-				//*
+				System.out.println("Bid edit: " + myBid.toString());
+
 			}
 			else{
 				//generate bids based on own utility
@@ -290,9 +312,6 @@ public class Group1 extends AbstractNegotiationParty {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-
-
 
 		}
 	}
