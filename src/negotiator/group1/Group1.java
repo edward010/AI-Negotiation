@@ -1,10 +1,13 @@
 package negotiator.group1;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import agents.anac.y2010.Yushu.Utility;
+import agents.anac.y2012.MetaAgent.agents.MrFriendly.BidTable;
+import agents.anac.y2012.MetaAgent.agents.MrFriendly.OpponentModel;
 import negotiator.Bid;
 import negotiator.DeadlineType;
 import negotiator.Timeline;
@@ -30,6 +33,14 @@ public class Group1 extends AbstractNegotiationParty {
 	private int numberOfIssues = 0;
 	private int totalRounds = 0;
 	private int currentRound = 0;
+	
+	private Bid myLastBid;
+	private boolean adjusted = false;
+	
+	private List<String> myOpponents = new ArrayList<String>();
+	private HashMap<String, OpponentModel> opponentModels = new HashMap<String, OpponentModel>();
+	private BidTable bidTable;
+	private ArrayList<Issue> issueList = new ArrayList<Issue>();
 	
 	/**
 	 * Please keep this constructor. This is called by genius.
@@ -65,12 +76,17 @@ public class Group1 extends AbstractNegotiationParty {
 		int roundsToGo = totalRounds - currentRound;
 		//double threshold = 0.9;
 		
+		//if my second round, set up opponent models
+		/*if(currentRound == 2){
+			setUpOpponentModels();
+		}*/
+		
 		double currentUtility = getUtility(bid);
 		
-		if((double)roundsToGo < 0.1 && currentUtility > 0.6 ){
+		if((double)roundsToGo < 0.1 && currentUtility > 0.7 ){
 			return new Accept();
 		}
-		else if((double)roundsToGo < 0.2  && currentUtility > 0.6 ){
+		else if((double)roundsToGo < 0.2  && currentUtility > 0.75 ){
 			return new Accept();
 		}
 		
@@ -81,82 +97,34 @@ public class Group1 extends AbstractNegotiationParty {
 				
 				//generate bid taking others preferences into account
 				
-				//generate a bid with high utility for me
-				try {
-					myBid = Utility.getRandomBid(this.utilitySpace);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					double newUtility = 0;
-					do{
-						myBid = generateRandomBid();
-						newUtility = getUtility(myBid);
-					}
-					while((newUtility < 0.75));
+				//generate a bid with high utility for me if it's my first bid
+				//otherwise, take my last bid as base for my new bid
+				double newUtility = 0;
+				if(myLastBid != null){
+					myBid = myLastBid;
 				}
+				// first round
+				else{
+					try {
+						myBid = Utility.getRandomBid(utilitySpace);
+					} catch (Exception e1) {
+						do{
+							myBid = generateRandomBid();
+						}
+						while((newUtility < 0.9));
+						e1.printStackTrace();
+					}
+					newUtility = getUtility(myBid);
+				}
+				
 				System.out.println("Bid generated: " + myBid.toString() + " || utility : " + getUtility(myBid));
-
-				List<Value> importantValues = new ArrayList<Value>();
-				List<Integer> importantIssues = new ArrayList<Integer>();
-				numberOfIssues = opponentInfo.get(0).weights.size();
 				
-				for (Information oppInfo : opponentInfo){
+				
+				myBid = adjustLeastImportantIssue(myBid);
+				if (!adjusted){
+					// 
 					
-					int maxWeightIndex = 0;
-					System.out.println("START  oppInfo.weights.get(maxWeightIndex) : " + oppInfo.weights.get(maxWeightIndex) + " || maxweightindex is " + maxWeightIndex);
-					for(int i = 1; i < numberOfIssues; i++){
-						if(oppInfo.weights.get(i) > oppInfo.weights.get(maxWeightIndex)){
-							maxWeightIndex = i;
-						}
-						System.out.println("oppInfo.weights.get(" + i + ") : " + oppInfo.weights.get(i));
-						System.out.println("oppInfo.weights.get(maxWeightIndex) : " + oppInfo.weights.get(maxWeightIndex) + " || maxweightindex is " + maxWeightIndex);
-					}
-					//get the issue with the highest weight
-					IssueValue importantIssue = oppInfo.values.get(maxWeightIndex);
-					int nubmerOfValues = importantIssue.item.size();
-					int mostImportant = 0;
-					//get the index of the most preferred value
-					for(int i = 1; i<nubmerOfValues; i++){
-						System.out.println(" --- "+ i + " " +  importantIssue.item.get(i));
-						if(importantIssue.number.get(i) > importantIssue.number.get(mostImportant)){
-							mostImportant = i;
-						}
-					}
-					System.out.println("mostImportant: " + mostImportant + " is "+ importantIssue.item.get(mostImportant));
-					System.out.println("issueID-1 is " + maxWeightIndex);
-					importantValues.add(importantIssue.item.get(mostImportant));
-					importantIssues.add(maxWeightIndex);
 				}
-				
-				//get our least important issue id-1
-				System.out.println("numberOfIssues : " + numberOfIssues);
-				int least = 0;
-				for(int i=0; i<numberOfIssues; i++){
-					if(utilitySpace.getWeight(i+1) < utilitySpace.getWeight(least+1)){
-						least = i;
-					}
-				}
-				System.out.println("least : " + least);
-				
-				//adjust bid for the (to us) least important issue
-
-				for(int ii = 0; ii < importantIssues.size(); ii++){
-					if(importantIssues.get(ii).equals(least)){
-						try {
-							System.out.println("myBid.get : " + myBid.getValue(least+1).toString());
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
-						// - to be corrected
-						myBid.setValue(least+1, importantValues.get(ii));
-					}
-					else{
-						System.out.println("nope");
-					}
-				}
-				System.out.println("Bid edit: " + myBid.toString());
 
 			}
 			else{
@@ -185,7 +153,8 @@ public class Group1 extends AbstractNegotiationParty {
 					}
 				}
 			}
-			return new Offer(myBid);
+			myLastBid = myBid;
+			return new Offer(myLastBid);
 		}
 		else  {
 			System.out.println("Accepted");
@@ -204,6 +173,10 @@ public class Group1 extends AbstractNegotiationParty {
 	 */
 	@Override
 	public void receiveMessage(Object sender, Action action) {
+		if(!myOpponents.contains(sender.toString())){
+			myOpponents.add(sender.toString());
+		}
+		
 		// Debug purpose.
 		count++;
 		if (count==170){
@@ -219,9 +192,23 @@ public class Group1 extends AbstractNegotiationParty {
 
 			// Get bid.
 			bid = Action.getBidFromAction(action);
+			//if it's the first round, initialize issueList
+			if(issueList.size() == 0){
+				issueList = bid.getIssues();
+			}
+			//else if the opponent is seen before but has not a model yet, so the opponentModels can be adjusted
+			else if (myOpponents.contains(sender.toString()) && !opponentModels.containsKey(sender)){
+				setUpOpponentModels();
+			}
+			//else, the corresponding opponentModel should exist and the current bid can be added
+			else{
+				opponentModels.get(sender).addOpponentBid(bid);
+			}
 			
 			// Process bid.
 			processBid(sender,bid);
+			
+			
 		}
 	}
 
@@ -313,6 +300,95 @@ public class Group1 extends AbstractNegotiationParty {
 				e.printStackTrace();
 			}
 
+		}
+	}
+	
+	//adjusts least important issue (to us) only if it is one of the most important issues of one of the opponents
+	private Bid adjustLeastImportantIssue(Bid bid){
+		System.out.println("Bid before edit: " + bid.toString());
+		
+		List<Value> importantValues = new ArrayList<Value>();
+		List<Integer> importantIssues = new ArrayList<Integer>();
+		numberOfIssues = opponentInfo.get(0).weights.size();
+		
+		for (Information oppInfo : opponentInfo){
+			
+			int maxWeightIndex = 0;
+			//System.out.println("START  oppInfo.weights.get(maxWeightIndex) : " + oppInfo.weights.get(maxWeightIndex) + " || maxweightindex is " + maxWeightIndex);
+			for(int i = 1; i < numberOfIssues; i++){
+				if(oppInfo.weights.get(i) > oppInfo.weights.get(maxWeightIndex)){
+					maxWeightIndex = i;
+				}
+				//System.out.println("oppInfo.weights.get(" + i + ") : " + oppInfo.weights.get(i));
+				//System.out.println("oppInfo.weights.get(maxWeightIndex) : " + oppInfo.weights.get(maxWeightIndex) + " || maxweightindex is " + maxWeightIndex);
+			}
+			//get the issue with the highest weight
+			IssueValue importantIssue = oppInfo.values.get(maxWeightIndex);
+			int nubmerOfValues = importantIssue.item.size();
+			int mostImportant = 0;
+			//get the index of the most preferred value
+			for(int i = 1; i<nubmerOfValues; i++){
+				System.out.println(" --- "+ i + " " +  importantIssue.item.get(i));
+				if(importantIssue.number.get(i) > importantIssue.number.get(mostImportant)){
+					mostImportant = i;
+				}
+			}
+			//System.out.println("mostImportant: " + mostImportant + " is "+ importantIssue.item.get(mostImportant));
+			//System.out.println("issueID-1 is " + maxWeightIndex);
+			importantValues.add(importantIssue.item.get(mostImportant));
+			importantIssues.add(maxWeightIndex);
+		}
+		
+		//get our least important issue id-1
+		System.out.println("numberOfIssues : " + numberOfIssues);
+		int least = 0;
+		for(int i=0; i<numberOfIssues; i++){
+			if(utilitySpace.getWeight(i+1) < utilitySpace.getWeight(least+1)){
+				least = i;
+			}
+		}
+		System.out.println("least : " + least);
+		
+		Value myVal = new Value();
+		boolean sameValues = false;
+		try {
+			myVal = bid.getValue(least+1);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		//adjust bid for the (to us) least important issue
+		for(int ii = 0; ii < importantIssues.size(); ii++){
+			if(myVal.equals((importantValues).get(ii))){
+				sameValues = true;
+			}
+			
+			if(importantIssues.get(ii).equals(least) && !sameValues){
+				try {
+					System.out.println("myBid.get : " + bid.getValue(least+1).toString());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				bid.setValue(least+1, importantValues.get(ii));
+				System.out.println("yep");
+				adjusted = true;
+			}
+			else{
+				System.out.println("nope");
+				adjusted = false;
+			}
+		}
+		System.out.println("Bid after edit: " + bid.toString());
+		return bid;
+	}
+	
+	private void setUpOpponentModels(){
+		if(issueList != null){
+			for(String opponent : myOpponents){
+				opponentModels.put(opponent, new OpponentModel(issueList,1,timeline));
+			}
 		}
 	}
 
