@@ -60,6 +60,7 @@ public class Group1 extends AbstractNegotiationParty {
 			long randomSeed) {
 		// Make sure that this constructor calls its parent.
 		super(utilitySpace, deadlines, timeline, randomSeed);
+		issueList = this.utilitySpace.getDomain().getIssues();
 	}
 
 
@@ -100,8 +101,11 @@ public class Group1 extends AbstractNegotiationParty {
 		else if ((double)roundsToGo > 0.2*totalRounds){
 			threshold = 0.75;
 		}
-		else{
+		else if (roundsToGo > 3){
 			threshold = 0.7;
+		}
+		else{
+			threshold = 0.6;
 		}
 		
 		if(currentUtility > threshold){
@@ -124,7 +128,7 @@ public class Group1 extends AbstractNegotiationParty {
 					
 					tempBid = rbc.getBid(utilitySpace, threshold-0.05, threshold+0.05);
 					newUtility = getUtility(tempBid);
-					allOpponentsUtilHigh = checkUtils(threshold-0.1, tempBid);
+					allOpponentsUtilHigh = checkUtils(threshold-0.2, tempBid);
 				}
 				while((newUtility < threshold-0.05 && !allOpponentsUtilHigh /* && estimated opponent utility < threshold - 0.1*/ ));
 				myBid = tempBid;
@@ -241,14 +245,14 @@ public class Group1 extends AbstractNegotiationParty {
 	public void receiveMessage(Object sender, Action action) {
 		if(!myOpponents.contains(sender.toString())){
 			myOpponents.add(sender.toString());
-		}
-		
-		// Debug purpose.
-		count++;
-		if (count==170){
-			count = count;
+			addOpponentModel(sender.toString());
 		}
 
+		//if the opponent is seen before but has not a model yet, so the opponentModels can be adjusted
+		/*if (myOpponents.contains(sender.toString()) && !opponentModels.containsKey(sender)){
+			setUpOpponentModels();
+		}*/
+		
 		// Check if the message received is a bid or an accept
 		if (action.toString()=="(Accept)"){
 			// Do nothing.
@@ -259,15 +263,9 @@ public class Group1 extends AbstractNegotiationParty {
 			// Get bid.
 			bid = ((Offer)action).getBid();
 			//if it's the first round, initialize issueList
-			if(issueList.size() == 0){
-				issueList = bid.getIssues();
-			}
-			//else if the opponent is seen before but has not a model yet, so the opponentModels can be adjusted
-			else if (myOpponents.contains(sender.toString()) && !opponentModels.containsKey(sender)){
-				setUpOpponentModels();
-			}
-			//else, the corresponding opponentModel should exist and the current bid can be added
-			else{
+			
+			//if the corresponding opponentModel should exist and the current bid can be added
+			if(opponentModels.containsKey(sender)){
 				opponentModels.get(sender).addOpponentBid(bid);
 			}
 			
@@ -450,12 +448,18 @@ public class Group1 extends AbstractNegotiationParty {
 		return bid;
 	}
 	
-	private void setUpOpponentModels(){
+	/*private void setUpOpponentModels(){
 		if(issueList != null){
 			for(String opponent : myOpponents){
 				opponentModels.put(opponent, new OpponentModel(issueList,1,timeline));
 				//bidTables.put(opponent, new BidTable(Agent, utilitySpace, threshold, opponentModels.get(opponent)));
 			}
+		}
+	}*/
+	
+	private void addOpponentModel(String opponent){
+		if(issueList != null && !opponentModels.containsKey(opponent)){
+			opponentModels.put(opponent, new OpponentModel(issueList,1,timeline));
 		}
 	}
 
