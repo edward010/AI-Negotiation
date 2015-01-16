@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import agents.anac.y2010.Yushu.Utility;
+import agents.anac.y2011.IAMhaggler2011.RandomBidCreator;
 import agents.anac.y2012.MetaAgent.agents.MrFriendly.BidTable;
 import agents.anac.y2012.MetaAgent.agents.MrFriendly.OpponentModel;
 import negotiator.Agent;
@@ -43,6 +44,8 @@ public class Group1 extends AbstractNegotiationParty {
 	private HashMap<String, BidTable> bidTables = new HashMap<String, BidTable>();
 	private ArrayList<Issue> issueList = new ArrayList<Issue>();
 	
+	private RandomBidCreator rbc = new RandomBidCreator();
+	
 	/**
 	 * Please keep this constructor. This is called by genius.
 	 *
@@ -75,8 +78,9 @@ public class Group1 extends AbstractNegotiationParty {
 		currentRound++;
 		System.out.println("agentID: " + getPartyId().toString() + "currentRound: " + currentRound);
 		int roundsToGo = totalRounds - currentRound;
-		//double threshold = 0.9;
+		double threshold = 1.0;
 		
+		Bid myBid;
 		//if my second round, set up opponent models
 		/*if(currentRound == 2){
 			setUpOpponentModels();
@@ -84,13 +88,74 @@ public class Group1 extends AbstractNegotiationParty {
 		
 		double currentUtility = getUtility(bid);
 		
+		if((double)roundsToGo > 0.8*totalRounds){
+			threshold = 0.9;
+		}
+		else if ((double)roundsToGo > 0.6*totalRounds){
+			threshold = 0.85;
+		}
+		else if ((double)roundsToGo > 0.4*totalRounds){
+			threshold = 0.8;
+		}
+		else if ((double)roundsToGo > 0.2*totalRounds){
+			threshold = 0.75;
+		}
+		else{
+			threshold = 0.7;
+		}
+		
+		if(currentUtility > threshold){
+			return new Accept();
+		}
+		else{
+			//generate bid taking others preferences into account
+			
+			//generate a bid with high utility for me if it's my first bid
+			//otherwise, take my last bid as base for my new bid
+			double newUtility = 0;	
+			if(myLastBid != null){
+				//myBid = myLastBid;
+				
+				Bid tempBid;
+				boolean allOpponentsUtilHigh;
+				do{
+					/*tempBid = generateRandomBid();
+					;*/
+					
+					tempBid = rbc.getBid(utilitySpace, threshold-0.05, threshold+0.05);
+					newUtility = getUtility(tempBid);
+					allOpponentsUtilHigh = checkUtils(threshold-0.1, tempBid);
+				}
+				while((newUtility < threshold-0.05 && !allOpponentsUtilHigh /* && estimated opponent utility < threshold - 0.1*/ ));
+				myBid = tempBid;
+				System.out.println("Bid generated: " + myBid.toString() + " || utility : " + getUtility(myBid));
+			}
+			// first round
+			else{
+				try {
+					myBid = Utility.getRandomBid(utilitySpace);
+				} catch (Exception e1) {
+					do{
+						myBid = generateRandomBid();
+					}
+					while((newUtility < 0.9));
+					e1.printStackTrace();
+				}
+				newUtility = getUtility(myBid);
+			}
+		}
+		
+		myLastBid = myBid;
+		return new Offer(myBid);
+		
+		/*
 		if((double)roundsToGo < 0.1 && currentUtility > 0.7 ){
 			return new Accept();
 		}
 		else if((double)roundsToGo < 0.2  && currentUtility > 0.75 ){
 			return new Accept();
-		}
-		
+		}*/
+		/*
 		if ((!validActions.contains(Accept.class)||getUtility(bid)<0.9 ) && !(roundsToGo < 4 && getUtility(bid)>0.6)){
 			Bid myBid = new Bid();	
 			
@@ -134,13 +199,13 @@ public class Group1 extends AbstractNegotiationParty {
 				if((double) roundsToGo > 0.75*(double) totalRounds){
 					// lower utility threshold a bit
 					
-					double threshold = 0.8;
+					double threshold2 = 0.8;
 					double newUtility = 0;
 					do{
 						myBid = generateRandomBid();
 						newUtility = getUtility(myBid);
 					}
-					while((newUtility < threshold));
+					while((newUtility < threshold2));
 				}
 				else{
 					//get max utility bid
@@ -162,8 +227,8 @@ public class Group1 extends AbstractNegotiationParty {
 			return new Accept();
 
 		}
-	}
-
+	}*/
+}
 
 	/**
 	 * All offers proposed by the other parties will be received as a message.
@@ -394,4 +459,13 @@ public class Group1 extends AbstractNegotiationParty {
 		}
 	}
 
+	private boolean checkUtils(double threshold, Bid bid){
+		for(String opponent : opponents){
+			OpponentModel oppModel = opponentModels.get(opponent);
+			if(oppModel.getEstimatedUtility(bid) <= threshold){
+				return false;
+			}
+		}
+		return true;
+	}
 }
