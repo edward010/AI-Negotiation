@@ -46,10 +46,11 @@ public class Group2 extends AbstractNegotiationParty {
 	 */
 	@Override
 	public Action chooseAction(List<Class> validActions) {
-		
 		// with 50% chance, counter offer
 		// if we are the first party, also offer.
-		if (!validActions.contains(Accept.class)||getUtility(bid)<0.9){
+		if (!validActions.contains(Accept.class)||getUtility(bid)<0.7){
+
+			//System.out.println("GETBID: " + getUtility(bid));
 			Bid bid;
 			try {
 				bid = Utility.getRandomBid(this.utilitySpace);
@@ -61,8 +62,8 @@ public class Group2 extends AbstractNegotiationParty {
 			return new Offer(bid);
 		}
 		else {
-			return new Offer(generateRandomBid());
-			//return new Accept();
+			//return new Offer(generateRandomBid());
+			return new Accept();
 		}
 	}
 

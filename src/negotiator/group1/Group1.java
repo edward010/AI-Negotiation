@@ -12,8 +12,12 @@ import negotiator.actions.Accept;
 import negotiator.actions.Action;
 import negotiator.actions.Offer;
 import negotiator.group1.Information.IssueValue;
+import negotiator.issue.Value;
 import negotiator.parties.AbstractNegotiationParty;
 import negotiator.utility.UtilitySpace;
+import agents.anac.y2011.TheNegotiator.BidsCollection;
+import agents.anac.y2011.IAMhaggler2011.BidCreator;
+import agents.anac.y2013.MetaAgent.portfolio.IAMhaggler2012.agents2011.southampton.utils.RandomBidCreator;
 
 /**
  * This is your negotiation party.
@@ -55,31 +59,10 @@ public class Group1 extends AbstractNegotiationParty {
 	 */
 	@Override
 	public Action chooseAction(List<Class> validActions) {
-		/*
-		// with 50% chance, counter offer
-		// if we are the first party, also offer.
-		if (!validActions.contains(Accept.class) || Math.random() > 0.5) {
-			return new Offer(generateRandomBid());
-		}
-		else {
-			return new Accept();
-		}
-		 */
-		/*if (!validActions.contains(Accept.class)||getUtility(bid)<0.9){
-			Bid bid;
-			try {
-				bid = Utility.getRandomBid(this.utilitySpace);
-			} catch (Exception e) {
-				bid = this.generateRandomBid();
-				e.printStackTrace();
-			}
-			return new Offer(bid);
-		}*/
-		
 		totalRounds = (int) deadlines.get(DeadlineType.ROUND);
-		System.out.println("totalRounds: " + totalRounds);
+		//System.out.println("totalRounds: " + totalRounds);
 		currentRound++;
-		System.out.println("agentID: " + getPartyId().toString() + "currentRound: " + currentRound);
+		//System.out.println("agentID: " + getPartyId().toString() + "currentRound: " + currentRound);
 		int roundsToGo = totalRounds - currentRound;
 		//double threshold = 0.9;
 		
@@ -92,81 +75,72 @@ public class Group1 extends AbstractNegotiationParty {
 			return new Accept();
 		}
 		
-		if ((!validActions.contains(Accept.class)||getUtility(bid)<0.9 ) && !(roundsToGo < 4 && getUtility(bid)>0.6)){
-			Bid myBid = new Bid();	
-			
-			if((double) roundsToGo <= 0.5*(double) totalRounds){
-				//generate bid taking others preferences into account
-				/*
-				List<Value> importantValues = new ArrayList<Value>();
-				List<Integer> importantIssues = new ArrayList<Integer>();
-				for (Information oppInfo : opponentInfo){
-					int maxWeightIndex = 0;
-					numberOfIssues = oppInfo.weights.size();
-					for(int i = 0; i < oppInfo.weights.size(); i++){
-						if(oppInfo.weights.get(i) > oppInfo.weights.get(maxWeightIndex)){
-							maxWeightIndex = i;
+		if ((!validActions.contains(Accept.class)||getUtility(bid)<0.7 ) && !(roundsToGo < 4 && getUtility(bid)>0.6)){
+			Bid b = new Bid();
+			RandomBidCreator bc = new RandomBidCreator();
+			b = bc.getBid(this.utilitySpace, 0.7, 1); 
+			List<Value> value = new ArrayList<Value>();
+			for(int n = 1; n <= b.getIssues().size(); n++) {
+				try {
+					value.add(b.getValue(n));
+					//System.out.println(n + " : " + b.getValue(n));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			List<Double> utilities = new ArrayList<Double>();
+			if(opponents.size() > 0) {
+				double lowestUtil = 0;
+				double util = 0;
+				double fairUtility = 0.6;
+				while (lowestUtil < fairUtility) {
+					b = bc.getBid(this.utilitySpace, 0.7, 1); 
+					value = new ArrayList<Value>();
+					utilities = new ArrayList<Double>();
+					for(int n = 1; n <= b.getIssues().size(); n++) {
+						try {
+							value.add(b.getValue(n));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 					}
-					importantValues.add(oppInfo.values.get(maxWeightIndex));
-					importantIssues.add(maxWeightIndex);
-				}
-				
-				int least = 0;
-				for(int i=1; i<numberOfIssues; i++){
-					if(utilitySpace.getWeight(i) < utilitySpace.getWeight(least)){
-						least = i;
+					for(int i = 0; i < opponents.size();i++) {
+						util = 0;
+						double weight = 0;
+						double valueNumber = 0;
+						for(int x = 0; x <  b.getIssues().size();x++) {
+							//define the weight of the issue
+							weight = opponentInfo.get(i).weights.get(x);
+							for(int y = 0; y < opponentInfo.get(i).values.get(x).item.size(); y++) {
+								//define the number of the value of the issue
+								if (opponentInfo.get(i).values.get(x).item.get(y).equals(value.get(x))) {
+									valueNumber = opponentInfo.get(i).values.get(x).number.get(y);
+									//System.out.println("SAME");
+									break;
+								}
+								else 
+									valueNumber = 1;
+							}
+							int max = getMaximumValueNumber(i,x);
+							util = util + weight*(valueNumber/max);
+						}
+						utilities.add(util);
 					}
+					lowestUtil = lowest(utilities);
+					fairUtility-=0.001;
 				}
-				
-				for(int j = 0; j<importantIssues.size(); j++){
-					int issueId = importantIssues.get(j);
-					//if I have a low weight for that issueId, set that issue to the corresponding value
-					if(issueId == least){
-						//myBid.setValue(issueId, importantValues.get(j));
-					}
-				}
-				*/
-				
-				//*current replacement: generate random bid with utility > 0.7
-				double newUtility = 0;
-				do{
-					myBid = generateRandomBid();
-					newUtility = getUtility(myBid);
-				}
-				while((newUtility < 0.6));
-				//*
+				System.out.println("util : " + lowestUtil);
+				System.out.println("fairUtility : " + fairUtility);
 			}
-			else{
-				//generate bids based on own utility
-				
-				if((double) roundsToGo > 0.75*(double) totalRounds){
-					// lower utility threshold a bit
-					
-					double threshold = 0.8;
-					double newUtility = 0;
-					do{
-						myBid = generateRandomBid();
-						newUtility = getUtility(myBid);
-					}
-					while((newUtility < threshold));
-				}
-				else{
-					//get max utility bid
-					
-					try {
-						myBid = Utility.getRandomBid(this.utilitySpace);
-					} catch (Exception e) {
-						myBid = this.generateRandomBid();
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-			return new Offer(myBid);
+			return new Offer(b);
+			//hier copy pasta
+
 		}
 		else  {
-			System.out.println("Accepted");
+			//System.out.println("Accepted");
 			return new Accept();
 
 		}
@@ -187,7 +161,6 @@ public class Group1 extends AbstractNegotiationParty {
 		if (count==170){
 			count = count;
 		}
-
 		// Check if the message received is a bid or an accept
 		if (action.toString()=="(Accept)"){
 			// Do nothing.
@@ -290,11 +263,29 @@ public class Group1 extends AbstractNegotiationParty {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-
-
-
 		}
 	}
-
+	
+	public int getMaximumValueNumber(int opponentIndex, int issueNmr) {
+		int max = 0;
+		int temp = 0;
+		for(int i = 0; i < opponentInfo.get(opponentIndex).values.get(issueNmr).number.size(); i++)
+		{
+			temp = opponentInfo.get(opponentIndex).values.get(issueNmr).number.get(i);
+			if(max < temp) {
+				max = temp;
+			}
+		}
+		return max;
+	}
+	
+	public double lowest(List<Double> list){  
+		double lowest = 100;
+		for(int n = 0; n < list.size();n++) {
+			double temp = list.get(n);
+			if (lowest > temp) 
+				lowest = temp;
+		}
+		return lowest;
+	}  
 }
