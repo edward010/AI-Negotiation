@@ -8,6 +8,7 @@ import java.util.Map;
 import agents.anac.y2010.Yushu.Utility;
 import agents.anac.y2012.MetaAgent.agents.MrFriendly.BidTable;
 import agents.anac.y2012.MetaAgent.agents.MrFriendly.OpponentModel;
+import negotiator.Agent;
 import negotiator.Bid;
 import negotiator.DeadlineType;
 import negotiator.Timeline;
@@ -39,7 +40,7 @@ public class Group1 extends AbstractNegotiationParty {
 	
 	private List<String> myOpponents = new ArrayList<String>();
 	private HashMap<String, OpponentModel> opponentModels = new HashMap<String, OpponentModel>();
-	private BidTable bidTable;
+	private HashMap<String, BidTable> bidTables = new HashMap<String, BidTable>();
 	private ArrayList<Issue> issueList = new ArrayList<Issue>();
 	
 	/**
@@ -187,11 +188,11 @@ public class Group1 extends AbstractNegotiationParty {
 		if (action.toString()=="(Accept)"){
 			// Do nothing.
 		}
-		else{
+		else if (action instanceof Offer){
 			// If the message is a bid.
 
 			// Get bid.
-			bid = Action.getBidFromAction(action);
+			bid = ((Offer)action).getBid();
 			//if it's the first round, initialize issueList
 			if(issueList.size() == 0){
 				issueList = bid.getIssues();
@@ -388,6 +389,7 @@ public class Group1 extends AbstractNegotiationParty {
 		if(issueList != null){
 			for(String opponent : myOpponents){
 				opponentModels.put(opponent, new OpponentModel(issueList,1,timeline));
+				//bidTables.put(opponent, new BidTable(Agent, utilitySpace, threshold, opponentModels.get(opponent)));
 			}
 		}
 	}
