@@ -106,10 +106,17 @@ public class Group1 extends AbstractNegotiationParty {
 			if(myLastBid != null){
 				Bid tempBid;
 				boolean allOpponentsUtilHigh;
+				double oppThreshold = threshold-0.2;
+				int counter = 0;
 				do{
+					if(counter == 100){
+						oppThreshold -= 0.05;
+						counter = 0;
+					}
 					tempBid = rbc.getBid(utilitySpace, threshold-0.05, threshold+0.05);
 					newUtility = getUtility(tempBid);
-					allOpponentsUtilHigh = checkUtils(threshold-0.2, tempBid);
+					allOpponentsUtilHigh = checkUtils(oppThreshold, tempBid);
+					counter++;
 				}
 				while((newUtility < threshold-0.05 && !allOpponentsUtilHigh));
 				myBid = tempBid;
