@@ -78,22 +78,22 @@ public class Group1 extends AbstractNegotiationParty {
 		
 		//Depending on the deadline, adjust the threshold.
 		if((double)roundsToGo > 0.8*totalRounds){
-			threshold = 0.9;
+			threshold = 0.95;
 		}
 		else if ((double)roundsToGo > 0.6*totalRounds){
-			threshold = 0.85;
+			threshold = 0.95;
 		}
 		else if ((double)roundsToGo > 0.4*totalRounds){
-			threshold = 0.8;
+			threshold = 0.95;
 		}
 		else if ((double)roundsToGo > 0.2*totalRounds){
-			threshold = 0.75;
+			threshold = 0.95;
 		}
 		else if (roundsToGo > 3){
-			threshold = 0.7;
+			threshold = 0.95;
 		}
 		else{
-			threshold = 0.6;
+			threshold = 0.95;
 		}
 		
 		if(currentUtility > threshold){
