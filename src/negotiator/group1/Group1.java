@@ -77,20 +77,14 @@ public class Group1 extends AbstractNegotiationParty {
 		double currentUtility = getUtility(bid);
 		
 		//Depending on the deadline, adjust the threshold.
-		if((double)roundsToGo > 0.8*totalRounds){
+		if ((double)roundsToGo > 0.5*totalRounds){
+			threshold = 0.95;
+		}
+		else if ((double)roundsToGo > 0.3*totalRounds){
 			threshold = 0.9;
 		}
-		else if ((double)roundsToGo > 0.6*totalRounds){
-			threshold = 0.85;
-		}
-		else if ((double)roundsToGo > 0.4*totalRounds){
-			threshold = 0.8;
-		}
-		else if ((double)roundsToGo > 0.2*totalRounds){
-			threshold = 0.75;
-		}
 		else if (roundsToGo > 3){
-			threshold = 0.7;
+			threshold = 0.85;
 		}
 		else{
 			threshold = 0.6;
