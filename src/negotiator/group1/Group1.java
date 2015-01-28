@@ -84,7 +84,7 @@ public class Group1 extends AbstractNegotiationParty {
 			threshold = 0.9;
 		}
 		else if (roundsToGo > 3){
-			threshold = 0.85;
+			threshold = 0.80;
 		}
 		else{
 			threshold = 0.6;
