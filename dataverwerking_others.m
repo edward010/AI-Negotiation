@@ -61,4 +61,4 @@ end
 results=results((~cellfun('isempty',results)));
 results=reshape(results,size(results,1)/9,9);
 
-save('results_others.mat','results')
+save('results_others.csv','results')
