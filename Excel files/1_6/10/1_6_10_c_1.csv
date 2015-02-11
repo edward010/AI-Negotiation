@@ -1,0 +1,14 @@
+sep=;
+Session;Time (s);Rounds;Agreement;Discounted;Approval;Min. utility;Max. utility;Distance to pareto;Distance to Nash;Social welfare;Agent name 1;Agent name 2;Agent name 3;Agent utility 1;Agent utility 2;Agent utility 3
+1;5,994;133;Yes;No;3;0,52919;0,82019;0,07274;0,28223;1,99384;class negotiator.group1.Group1@1760743800;class negotiator.group6.Group6@1825392830;class negotiator.group10.Group10@701487939;0,82019;0,64447;0,52919
+2;5,974;136;Yes;No;3;0,62758;0,81342;0,00000;0,25835;2,15416;class negotiator.group1.Group1@405590603;class negotiator.group10.Group10@505602376;class negotiator.group6.Group6@1239426060;0,81342;0,62758;0,71315
+3;11,861;148;Yes;No;3;0,48892;0,82656;0,07710;0,20155;1,92995;class negotiator.group10.Group10@210175440;class negotiator.group1.Group1@86412713;class negotiator.group6.Group6@1303255365;0,61447;0,82656;0,48892
+4;13,810;170;Yes;No;3;0,52752;0,75379;0,06032;0,33993;2,02734;class negotiator.group10.Group10@851801792;class negotiator.group6.Group6@54521588;class negotiator.group1.Group1@1055308775;0,74603;0,52752;0,75379
+5;11,425;152;Yes;No;3;0,51618;0,80376;0,08513;0,38436;1,88618;class negotiator.group6.Group6@1665271356;class negotiator.group10.Group10@536218862;class negotiator.group1.Group1@340043124;0,56624;0,51618;0,80376
+6;4,215;110;Yes;No;3;0,50751;0,93355;0,00000;0,19951;2,05594;class negotiator.group6.Group6@1571851723;class negotiator.group1.Group1@1913551855;class negotiator.group10.Group10@1129320415;0,61488;0,93355;0,50751
+1;3,715;119;Yes;No;3;0,53550;0,91990;0,00000;0,34602;2,08390;class negotiator.group1.Group1@875031277;class negotiator.group6.Group6@897003141;class negotiator.group10.Group10@1981477123;0,91990;0,62850;0,53550
+2;4,992;130;Yes;No;3;0,62758;0,81342;0,00000;0,25835;2,15416;class negotiator.group1.Group1@390699194;class negotiator.group10.Group10@466001872;class negotiator.group6.Group6@989198146;0,81342;0,62758;0,71315
+3;10,824;131;Yes;No;3;0,67173;0,85342;0,00000;0,00000;2,22013;class negotiator.group10.Group10@1851075452;class negotiator.group1.Group1@1103233401;class negotiator.group6.Group6@1410904548;0,69499;0,85342;0,67173
+4;7,905;132;Yes;No;3;0,47749;0,87572;0,04118;0,43229;1,98548;class negotiator.group10.Group10@825795113;class negotiator.group6.Group6@1612756158;class negotiator.group1.Group1@1898364623;0,63228;0,47749;0,87572
+5;6,252;129;Yes;No;3;0,58123;0,87808;0,00000;0,29943;2,12796;class negotiator.group6.Group6@2017308813;class negotiator.group10.Group10@501055088;class negotiator.group1.Group1@1506372546;0,58123;0,66865;0,87808
+6;6,190;127;Yes;No;3;0,52919;0,80383;0,07274;0,15473;1,99387;class negotiator.group6.Group6@1125949384;class negotiator.group1.Group1@902055717;class negotiator.group10.Group10@667008292;0,66085;0,80383;0,52919
