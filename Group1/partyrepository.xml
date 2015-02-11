@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<repository fileName="partyrepository.xml">
+    <items>
+        <agentRepItems/>
+        <partyRepItems>
+		<partyRepItem
+          description="Agent for group 1"
+          classPath="negotiator.group1.Group1"
+          partyName="Group 1"
+          protocolClassPath="negotiator.protocol.AlternatingOfferCounterOfferProtocol"/>
+        </partyRepItems>
+        <domainRepItem/>
+        <protocolRepItem/>
+        <multiPartyProtocolRepItem/>
+    </items>
+    <filename>partyrepository.xml</filename>
+</repository>

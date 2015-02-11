@@ -70,7 +70,7 @@ public class Group1 extends AbstractNegotiationParty {
 		totalRounds = (int) deadlines.get(DeadlineType.ROUND);
 		System.out.println("totalRounds: " + totalRounds);
 		currentRound++;
-		System.out.println("agentID: " + getPartyId().toString() + "currentRound: " + currentRound);
+		//System.out.println("agentID: " + getPartyId().toString() + "currentRound: " + currentRound);
 		int roundsToGo = totalRounds - currentRound;
 		double threshold = 1.0;
 		Bid myBid;
@@ -114,7 +114,7 @@ public class Group1 extends AbstractNegotiationParty {
 				}
 				while((newUtility < threshold-0.05 && !allOpponentsUtilHigh));
 				myBid = tempBid;
-				System.out.println("Bid generated: " + myBid.toString() + " || utility : " + getUtility(myBid));
+				//System.out.println("Bid generated: " + myBid.toString() + " || utility : " + getUtility(myBid));
 			}
 			// first round
 			else{
