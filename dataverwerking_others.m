@@ -44,6 +44,10 @@ group1=group1/100000;
 group2=group2/100000;
 group3=group3/100000;
 
+for k=3:size(file,1)
+                deadline(k-2)=file{k,3};
+            end
+
 results{i-2,1} = groupname1;
 results{i-2,2} = mean(group1);
 results{i-2,3} = std(group1);
@@ -53,12 +57,13 @@ results{i-2,6} = std(group2);
 results{i-2,7} = groupname3;
 results{i-2,8} = mean(group3);
 results{i-2,9} = std(group3);
-
+results{i-2,10} = mean(deadline);
+results{i-2,11} = std(deadline);
 
 
 end
 
 results=results((~cellfun('isempty',results)));
-results=reshape(results,size(results,1)/9,9);
+results=reshape(results,size(results,1)/11,11);
 
-save('results_others.csv','results')
+save('results_others.mat','results')

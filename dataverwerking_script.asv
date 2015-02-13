@@ -102,6 +102,7 @@ for i=3:size(listing)
             end
         end
         
+        keyboard
         a=strfind(listing(i).name,'a');
         b=strfind(listing(i).name,'b');
         c=strfind(listing(i).name,'c');
@@ -140,8 +141,6 @@ for i=3:size(listing)
             results_hardt{i-2,7} = groupname3;
             results_hardt{i-2,8} = mean(group3);
             results_hardt{i-2,9} = std(group3);
-            results_hardt{i-2,10} = mean(deadline);
-            results_hardt{i-2,11} = std(deadline);
         end
         
         clear group1 group2 group3
@@ -149,14 +148,14 @@ for i=3:size(listing)
     end
 end
 results_easy=results_easyt((~cellfun('isempty',results_easyt)));
-results_easy=reshape(results_easy,size(results_easy,1)/11,11);
+results_easy=reshape(results_easy,size(results_easy,1)/9,9);
 results_medium=results_mediumt((~cellfun('isempty',results_mediumt)));
-results_medium=reshape(results_medium,size(results_medium,1)/11,11);
+results_medium=reshape(results_medium,size(results_medium,1)/9,9);
 results_hard=results_hardt((~cellfun('isempty',results_hardt)));
-results_hard=reshape(results_hard,size(results_hard,1)/11,11);
+results_hard=reshape(results_hard,size(results_hard,1)/9,9);
 
 clear results_easyt results_mediumt results_hardt
 
-save('results_easy.mat','results_easy')
-save('results_medium.mat','results_medium')
-save('results_hard.mat','results_hard')
+% save('results_easy.mat','results_easy')
+% save('results_medium.mat','results_medium')
+% save('results_hard.mat','results_hard')
