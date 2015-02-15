@@ -68,7 +68,7 @@ public class Group1 extends AbstractNegotiationParty {
 	@Override
 	public Action chooseAction(List<Class> validActions) {
 		totalRounds = (int) deadlines.get(DeadlineType.ROUND);
-		System.out.println("totalRounds: " + totalRounds);
+		//System.out.println("totalRounds: " + totalRounds);
 		currentRound++;
 		//System.out.println("agentID: " + getPartyId().toString() + "currentRound: " + currentRound);
 		int roundsToGo = totalRounds - currentRound;
